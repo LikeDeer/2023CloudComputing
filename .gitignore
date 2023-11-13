@@ -1,0 +1,5 @@
+resources/credentials/
+.DS_Store
+.idea/
+venv/
+src/__pycache__/
