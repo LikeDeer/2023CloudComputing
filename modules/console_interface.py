@@ -3,7 +3,6 @@ import platform
 
 from prettytable import PrettyTable
 
-from modules.constants import INSTRUCTIONS_CREATE_INSTANCES
 from modules.ec2_driver import EC2Driver
 
 
@@ -50,8 +49,8 @@ class ConsoleInterface:
         print(result)
 
     # 6.
-    def print_create_instance(self):
-        pass
+    def print_create_instance(self, result):
+        print(result)
 
     # 7.
     def print_reboot_instance(self, result):
@@ -76,24 +75,10 @@ class ConsoleInterface:
         input_instance_name = input()
         return input_instance_name
 
-    def get_params_create_instance(self):
-        params = {}
-        print(" * Give parameters following questions\n"
-              " *  Some questions are marked '*-', which means required.\n"
-              " *  Otherwise, you can remain it blank, which will be applied by default values\n")
-        for item in INSTRUCTIONS_CREATE_INSTANCES:
-            print(item[0], end='')
-            input_param = input()
-
-            if input_param != "":
-                params[item[1]] = input_param
-
-            """
-            elif input_param == 'help':
-                self.print_help_create_instance(item[1])
-            """
-
-        return params
+    def get_instance_count(self):
+        print(" * How many do you want to create? > ", end='')
+        input_count = input()
+        return input_count
 
     def print_pretty(self, data):
         headers = list(data[0].keys())

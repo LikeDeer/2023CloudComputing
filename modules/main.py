@@ -71,8 +71,9 @@ def main(ec2):
             cli.print_available_regions(result)
 
         elif command == Command.CREATE_INSTANCE.value:
-            params = cli.get_params_create_instance()
-            ec2.create_instance(params)
+            count = int(cli.get_instance_count())
+            result = ec2.create_instance(count)
+            cli.print_create_instance(result)
 
         elif command == Command.REBOOT_INSTANCE.value:
             param = cli.get_instance_name()

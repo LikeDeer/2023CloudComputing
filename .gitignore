@@ -1,4 +1,5 @@
 resources/credentials/
+resources/instance_creation_info.csv
 .DS_Store
 .idea/
 venv/

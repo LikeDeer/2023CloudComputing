@@ -1,3 +1,4 @@
+import csv
 import boto3
 from botocore.exceptions import NoCredentialsError
 
@@ -17,7 +18,11 @@ class EC2Driver:
             self._sts_client = boto3.client('sts', aws_access_key_id=access_key_id,
                                             aws_secret_access_key=secret_access_key,
                                             region_name=self._region)
-            print("연결 성공! Default Region: ", self._region)
+
+            self._next_slave_no = len(process_list_instances(self.list_instances()))
+
+            print("연결 성공! Default Region: ", self._region,
+                  "User: ", self._sts_client.get_caller_identity().get('Account'))
         except Exception as e:
             print(f"연결 중 오류 발생: {e}")
 
@@ -66,7 +71,6 @@ class EC2Driver:
 
     # 5.
     def stop_instance(self, instance_name):
-
         if instance_name == "Cloud_Master":
             print(" *** WARNING ***\n Are you really want to stop MASTER node?[y/N] > ", end='')
             answer = input()
@@ -91,14 +95,38 @@ class EC2Driver:
             print(f"인스턴스 중지 중 오류 발생: {e}")
 
     # 6.
-    def create_instance(self, instance_params):
-        # 매개변수 설정
+    def create_instance(self, count):
+        info_path = "resources/"
+        info_csv_name = "instance_creation_info.csv"
+        f = open(info_path + info_csv_name, 'r', encoding='utf-8')
+        rdr = csv.DictReader(f)
 
+        creation_info = next(rdr, None)
+        instance_params = {}
+        if creation_info is not None:
+            # BOM 문자 제거
+            creation_info = {key.strip('\ufeff'): value for key, value in creation_info.items()}
+            instance_params["ImageId"] = creation_info.get("Slave AMI")
+            instance_params["InstanceType"] = "t2.micro"
+            instance_params["SecurityGroupIds"] = [creation_info.get("Security Group Id")]
+            instance_params["SecurityGroups"] = ["CloudSecurityGroup"]
+            instance_params["KeyName"] = creation_info.get("Key Name")
+            instance_params["MinCount"] = 1
+            instance_params["MaxCount"] = 1
 
         # EC2 인스턴스 생성
         try:
-            instances = self._ec2_client.run_instances(**instance_params)
-            return instances
+            for i in range(count):
+                response = self._ec2_client.run_instances(**instance_params)
+                instance_id = response['Instances'][0]['InstanceId']
+                self._ec2_client.create_tags(
+                    Resources=[instance_id],
+                    Tags=[
+                        {'Key': 'Name', 'Value': f'Cloud_Slave{self._next_slave_no}'}
+                    ]
+                )
+                self._next_slave_no += 1
+            return 0
         except Exception as e:
             print(f"인스턴스 생성 중 오류 발생: {e}")
 

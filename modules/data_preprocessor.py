@@ -15,7 +15,7 @@ def process_list_instances(data):
                 'State': instance['State']['Name'],
                 'InstanceType': instance['InstanceType'],
                 'PublicIpAddress': instance.get('PublicIpAddress', '-'),
-                'PrivateIpAddress': instance['PrivateIpAddress'],
+                'PrivateIpAddress': instance.get('PrivateIpAddress', '-'),
                 'LaunchTime': instance['LaunchTime'].astimezone(pytz.timezone('Etc/GMT')).strftime('%Y/%m/%d %H:%M %Z'),
                 'SecurityGroups': ', '.join([group['GroupName'] for group in instance['SecurityGroups']]),
                 'KeyName': instance.get('KeyName', '-'),
