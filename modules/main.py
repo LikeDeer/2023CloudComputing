@@ -3,6 +3,7 @@ import csv
 
 from modules.console_interface import ConsoleInterface
 from modules.ec2_driver import EC2Driver
+import modules.data_preprocessor as dpp
 
 
 class Command(Enum):
@@ -19,7 +20,7 @@ class Command(Enum):
 
 def init():
     credential_path = "resources/credentials/"
-    access_key_csv_name = "IAMLikeDeer_accessKeys.csv"
+    access_key_csv_name = "credentials.csv"
     f = open(credential_path + access_key_csv_name, 'r', encoding='utf-8')
     rdr = csv.DictReader(f)
 
@@ -42,29 +43,39 @@ def init():
 
 
 def main(ec2):
-    cli = ConsoleInterface()
+    cli = ConsoleInterface(ec2)
     command = ""
     while command != Command.QUIT.value:
         cli.print_menu()
         command = input()
         if command == Command.LIST_INSTANCES.value:
-            result = ec2.list_instances()
+            result = dpp.process_list_instances(ec2.list_instances())
             cli.print_list(result)
+
         elif command == Command.AVAILABLE_ZONES.value:
-            result = ec2.available_zones()
+            result = dpp.process_available_zones(ec2.available_zones())
             cli.print_available_zones(result)
+
         elif command == Command.START_INSTANCE.value:
-            cli.print_start()
+            cli.print_start_instance()
+
         elif command == Command.AVAILABLE_REGIONS.value:
-            result = ec2.available_regions()
+            result = dpp.process_available_regions(ec2.available_regions())
             cli.print_available_regions(result)
+
         elif command == Command.CREATE_INSTANCE.value:
-            cli.print_create_instance()
+            params = cli.get_params_create_instance()
+            ec2.create_instance(params)
+
         elif command == Command.REBOOT_INSTANCE.value:
             cli.print_reboot_instance()
+
         elif command == Command.LIST_IMAGES.value:
-            cli.print_list_images()
+            result = dpp.process_list_images(ec2.list_images())
+            cli.print_list_images(result)
+
         elif command == Command.QUIT.value:
             cli.print_quit()
+
         else:
             cli.print_error()
