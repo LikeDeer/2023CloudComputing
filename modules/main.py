@@ -57,7 +57,14 @@ def main(ec2):
             cli.print_available_zones(result)
 
         elif command == Command.START_INSTANCE.value:
-            cli.print_start_instance()
+            param = cli.get_instance_name()
+            result = ec2.start_instance(param)
+            cli.print_start_instance(result)
+
+        elif command == Command.STOP_INSTANCE.value:
+            param = cli.get_instance_name()
+            result = ec2.stop_instance(param)
+            cli.print_stop_instance(result)
 
         elif command == Command.AVAILABLE_REGIONS.value:
             result = dpp.process_available_regions(ec2.available_regions())
@@ -68,7 +75,9 @@ def main(ec2):
             ec2.create_instance(params)
 
         elif command == Command.REBOOT_INSTANCE.value:
-            cli.print_reboot_instance()
+            param = cli.get_instance_name()
+            result = ec2.reboot_instance(param)
+            cli.print_reboot_instance(result)
 
         elif command == Command.LIST_IMAGES.value:
             result = dpp.process_list_images(ec2.list_images())

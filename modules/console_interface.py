@@ -38,24 +38,24 @@ class ConsoleInterface:
         self.print_pretty(data)
 
     # 3.
-    def print_start_instance(self):
-        pass
+    def print_start_instance(self, result):
+        print(result)
 
     # 4.
     def print_available_regions(self, data):
         self.print_pretty(data)
 
     # 5.
-    def print_stop_instance(self):
-        pass
+    def print_stop_instance(self, result):
+        print(result)
 
     # 6.
     def print_create_instance(self):
         pass
 
     # 7.
-    def print_reboot_instance(self):
-        pass
+    def print_reboot_instance(self, result):
+        print(result)
 
     # 8.
     def print_list_images(self, data):
@@ -70,9 +70,15 @@ class ConsoleInterface:
 
     # Methods which require inputs by the user
     # 6-1.
+
+    def get_instance_name(self):
+        print(" * Give instance name > ", end='')
+        input_instance_name = input()
+        return input_instance_name
+
     def get_params_create_instance(self):
         params = {}
-        print(" * Give parameters via following questions\n"
+        print(" * Give parameters following questions\n"
               " *  Some questions are marked '*-', which means required.\n"
               " *  Otherwise, you can remain it blank, which will be applied by default values\n")
         for item in INSTRUCTIONS_CREATE_INSTANCES:
