@@ -15,6 +15,12 @@ class Command(Enum):
     CREATE_INSTANCE = '6'
     REBOOT_INSTANCE = '7'
     LIST_IMAGES = '8'
+    CONDOR_STATUS = '11'
+    SSH_CONNECT = '12'
+    JOB_SUBMIT = '13'
+    FETCH_RESULTS = '14'
+    CONDOR_QUEUE = '15'
+    CONDOR_REMOVE = '16'
     QUIT = '99'
 
 
@@ -86,6 +92,28 @@ def main(ec2):
 
         elif command == Command.QUIT.value:
             cli.print_quit()
+
+        elif command == Command.CONDOR_STATUS.value:
+            result = ec2.condor_status()
+            cli.print_condor_status(result)
+
+        elif command == Command.SSH_CONNECT.value:
+            ec2.ssh_to_master()
+
+        elif command == Command.JOB_SUBMIT.value:
+            result = ec2.test_job_submit()
+            print(result)
+
+        elif command == Command.CONDOR_QUEUE.value:
+            result = ec2.condor_queue()
+            print(result.stdout)
+
+        elif command == Command.FETCH_RESULTS.value:
+            ec2.fetch_results()
+
+        elif command == Command.CONDOR_REMOVE.value:
+            result = ec2.condor_rm_all()
+            print(result.stdout)
 
         else:
             cli.print_error()

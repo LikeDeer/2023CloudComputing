@@ -1,9 +1,14 @@
 import csv
 import boto3
-from botocore.exceptions import NoCredentialsError
+import subprocess
+import paramiko
 
 from modules.data_preprocessor import process_list_instances
 from modules.finder import find_instance_id_from_instance_name
+
+
+MASTER_PUBLIC_IP = "ec2-50-17-104-113.compute-1.amazonaws.com"
+KEY_PEM_PATH = "resources/credentials/CloudComputingProjectKey.pem"
 
 
 # noinspection PyMethodMayBeStatic
@@ -177,3 +182,77 @@ class EC2Driver:
             print(f"가용 image 조회 중 오류 발생: {e}")
 
     """ Additional functions """
+    def condor_status(self):
+        cmd = f'ssh -i \"resources/credentials/CloudComputingProjectKey.pem\" ec2-user@{MASTER_PUBLIC_IP} condor_status'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result
+
+    def ssh_to_master(self):
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        try:
+            client.connect(MASTER_PUBLIC_IP,
+                           username='ec2-user',
+                           key_filename=KEY_PEM_PATH)
+            print("Connection Complete. Type 'exit' to close the connection.")
+            while True:
+                print("$ ", end='')
+                command = input()
+
+                if command == 'exit':
+                    break
+                else:
+                    stdin, stdout, stderr = client.exec_command(command)
+
+                    output = stdout.read().decode('utf-8')
+                    print(output)
+
+        finally:
+            client.close()
+
+    def test_job_submit(self):
+        count_sh_path = "resources/example/count.sh"
+        multiple_jds_path = "resources/example/multiple.jds"
+        destination = "test/"
+
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        transport = paramiko.Transport((MASTER_PUBLIC_IP, 22))
+
+        try:
+            client.connect(MASTER_PUBLIC_IP,
+                           username='ec2-user',
+                           key_filename=KEY_PEM_PATH)
+            transport.connect(username='ec2-user', pkey=paramiko.RSAKey(filename=KEY_PEM_PATH))
+
+            sftp = paramiko.SFTPClient.from_transport(transport)
+            sftp.put(count_sh_path, destination + "count.sh")
+            sftp.put(multiple_jds_path, destination + "multiple.jds")
+
+            command = f"condor_submit ./test/multiple.jds"
+            stdin, stdout, stderr = client.exec_command(command)
+            output = stdout.read().decode('utf-8')
+
+            print("Submitted an example program. Try '15. condor queue' to check it.")
+            return output
+
+        except Exception as e:
+            print(f"작업 제출 중 오류 발생: {e}")
+
+        finally:
+            client.close()
+            transport.close()
+
+    def condor_queue(self):
+        cmd = f'ssh -i \"resources/credentials/CloudComputingProjectKey.pem\" ec2-user@{MASTER_PUBLIC_IP} condor_q'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result
+
+    def fetch_results(self):
+        pass
+
+    def condor_rm_all(self):
+        cmd = f'ssh -i \"resources/credentials/CloudComputingProjectKey.pem\" ec2-user@{MASTER_PUBLIC_IP} condor_rm -all'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result

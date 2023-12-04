@@ -1,9 +1,6 @@
-import os
 import platform
 
 from prettytable import PrettyTable
-
-from modules.ec2_driver import EC2Driver
 
 
 # noinspection PyMethodMayBeStatic
@@ -19,13 +16,16 @@ class ConsoleInterface:
               "          at Chungbuk National University")
 
     def print_menu(self):
-        print("==========================================\n"
-              "1. list instance     2. available zones\n"
-              "3. start instance    4. available regions\n"
-              "5. stop instance     6. create instance\n"
-              "7. reboot instance   8. list images\n"
+        print("============================================\n"
+              "1.  list instance     2.  available zones\n"
+              "3.  start instance    4.  available regions\n"
+              "5.  stop instance     6.  create instance\n"
+              "7.  reboot instance   8.  list images\n"
+              "11. condor status    12.  send direct command\n"
+              "13. test job submit  14.  fetch results\n"
+              "15. condor queue     16.  condor flush\n"
               "                     99. quit\n"
-              "==========================================\n"
+              "============================================\n"
               ">> ", end='')
 
     # 1.
@@ -68,8 +68,6 @@ class ConsoleInterface:
         print("Invalid Command. Try Again.")
 
     # Methods which require inputs by the user
-    # 6-1.
-
     def get_instance_name(self):
         print(" * Give instance name > ", end='')
         input_instance_name = input()
@@ -90,17 +88,8 @@ class ConsoleInterface:
 
         print(table)
 
+    def print_condor_status(self, result):
+        print(f"{result.stdout}")
 
-"""
-    def print_help_create_instance(self, for_what):
-        if for_what == "ImageId":
-            images = self._ec2.list_images()
-            self.print_list_images(images)
-        elif for_what == "InstanceType":
-            instance_types = self._ec2.list
-        elif for_what == "MinCount":
-
-        elif for_what == "KeyName":
-
-        elif for_what == "SecurityGroups":
-"""
+    def print_condor_q(self, result):
+        print(f"{result.stdout}")
